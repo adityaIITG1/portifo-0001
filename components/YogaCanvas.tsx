@@ -179,8 +179,8 @@ export default function YogaCanvas() {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({
                         video: {
-                            width: 1280,
-                            height: 720,
+                            width: 640,
+                            height: 480,
                         },
                     });
                     addLog("Camera: Access granted");
@@ -354,8 +354,8 @@ export default function YogaCanvas() {
             let handResults = { landmarks: [] as any[], worldLandmarks: [] as any[] };
             let faceResults = { faceLandmarks: [] as any[] };
 
-            // Throttle detection to every 33ms (approx 30fps)
-            if (now - lastDetectionTimeRef.current > 33) {
+            // Throttle detection to every 100ms (approx 10fps)
+            if (now - lastDetectionTimeRef.current > 100) {
                 handResults = handLandmarker.detectForVideo(video, now);
                 faceResults = faceLandmarker.detectForVideo(video, now);
                 lastDetectionTimeRef.current = now;
