@@ -30,7 +30,7 @@ export function detectGyanMudra(landmarks: NormalizedLandmark[]): boolean {
     const ringExt = distSq(landmarks[16], wrist) > distSq(landmarks[14], wrist);
     const pinkyExt = distSq(landmarks[20], wrist) > distSq(landmarks[18], wrist);
 
-    return d < 0.25 && middleExt && ringExt && pinkyExt;
+    return d < 0.35 && middleExt && ringExt && pinkyExt;
 }
 
 export function detectPranaMudra(landmarks: NormalizedLandmark[]): boolean {
@@ -48,7 +48,7 @@ export function detectPranaMudra(landmarks: NormalizedLandmark[]): boolean {
     const indexExt = distSq(landmarks[8], wrist) > distSq(landmarks[6], wrist);
     const middleExt = distSq(landmarks[12], wrist) > distSq(landmarks[10], wrist);
 
-    return dRing < 0.28 && dPinky < 0.28 && indexExt && middleExt;
+    return dRing < 0.35 && dPinky < 0.35 && indexExt && middleExt;
 }
 
 export function detectApanaMudra(landmarks: NormalizedLandmark[]): boolean {
@@ -64,7 +64,7 @@ export function detectApanaMudra(landmarks: NormalizedLandmark[]): boolean {
     const indexExt = distSq(landmarks[8], wrist) > distSq(landmarks[6], wrist);
     const pinkyExt = distSq(landmarks[20], wrist) > distSq(landmarks[18], wrist);
 
-    return dMid < 0.28 && dRing < 0.28 && indexExt && pinkyExt;
+    return dMid < 0.35 && dRing < 0.35 && indexExt && pinkyExt;
 }
 
 export function detectSuryaMudra(landmarks: NormalizedLandmark[]): boolean {
@@ -80,7 +80,7 @@ export function detectSuryaMudra(landmarks: NormalizedLandmark[]): boolean {
     // Check if thumb is over ring finger (Thumb tip close to Ring PIP)
     const dThumbRing = dist(thumbTip, ringPip) / handScale;
 
-    return ringFolded && dThumbRing < 0.30;
+    return ringFolded && dThumbRing < 0.35;
 }
 
 export function detectVarunMudra(landmarks: NormalizedLandmark[]): boolean {
@@ -95,7 +95,7 @@ export function detectVarunMudra(landmarks: NormalizedLandmark[]): boolean {
     const midExt = distSq(landmarks[12], wrist) > distSq(landmarks[10], wrist);
     const ringExt = distSq(landmarks[16], wrist) > distSq(landmarks[14], wrist);
 
-    return dPinky < 0.28 && indexExt && midExt && ringExt;
+    return dPinky < 0.35 && indexExt && midExt && ringExt;
 }
 
 export function detectNamaste(landmarksList: NormalizedLandmark[][]): boolean {

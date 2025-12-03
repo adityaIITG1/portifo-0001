@@ -534,7 +534,7 @@ export default function YogaCanvas() {
                     pendingGestureStartTimeRef.current = now;
                 } else {
                     // Same pending gesture, check duration
-                    if (now - pendingGestureStartTimeRef.current > 500) { // 500ms stability required
+                    if (now - pendingGestureStartTimeRef.current > 300) { // 300ms stability required
                         if (gestureRef.current !== currentGesture) {
                             // Confirmed new gesture
                             gestureRef.current = currentGesture;
