@@ -11,6 +11,8 @@ export interface ArduinoData {
         pitta: number;
         kapha: number;
     };
+    insightText: string;
+    finding: string;
 }
 
 export function useArduino() {
@@ -20,7 +22,9 @@ export function useArduino() {
         beatDetected: false,
         isConnected: false,
         hrvIndex: 50,
-        doshas: { vata: 0.33, pitta: 0.33, kapha: 0.33 }
+        doshas: { vata: 0.33, pitta: 0.33, kapha: 0.33 },
+        insightText: "Scanning bio-rhythms...",
+        finding: "Scanning..."
     });
 
     const [error, setError] = useState<string | null>(null);
@@ -30,6 +34,7 @@ export function useArduino() {
     const lastBeatTimeRef = useRef<number>(0);
     const lastDataTimeRef = useRef<number>(0);
     const ibiHistoryRef = useRef<number[]>([]);
+    const lastInsightTimeRef = useRef<number>(0);
 
     // Data Timeout & Reset Logic
     useEffect(() => {
@@ -76,6 +81,30 @@ export function useArduino() {
         // Normalize
         const total = v + p + k;
         return { vata: v / total, pitta: p / total, kapha: k / total };
+    };
+
+    const generateInsight = (hr: number, hrv: number, doshas: { vata: number, pitta: number, kapha: number }) => {
+        const now = Date.now();
+        if (now - lastInsightTimeRef.current < 15000) return null; // Update every 15s
+        lastInsightTimeRef.current = now;
+
+        let insight = "Breathing is syncing with heart rate.";
+        let finding = "Scanning...";
+
+        // Finding Logic
+        if (doshas.vata > 0.4) finding = "Dominant: Vata (High Movement)";
+        else if (doshas.pitta > 0.4) finding = "Dominant: Pitta (High Energy)";
+        else if (doshas.kapha > 0.4) finding = "Dominant: Kapha (Stability)";
+        else finding = "Finding: Tridosha Balanced";
+
+        // Insight Logic
+        if (hr > 90) insight = "High arousal. Focus on slow exhalations.";
+        else if (hr > 75) insight = "Slight tension. Soften your shoulders.";
+        else if (hrv > 60) insight = "Deep state of relaxation detected.";
+        else if (hrv > 40) insight = "Heart rhythm is steady and calm.";
+        else insight = "Excellent physiological coherence.";
+
+        return { insight, finding };
     };
 
     const hrBufferRef = useRef<number[]>([]);
@@ -165,20 +194,25 @@ export function useArduino() {
                 finalSpo2 = 0;
             }
 
+            // Generate Insight
+            const newInsights = generateInsight(smoothedHr, hrv, doshas);
+
             setData(prev => ({
                 ...prev,
                 heartRate: smoothedHr,
                 spo2: finalSpo2,
                 beatDetected: beat,
                 hrvIndex: Math.round(hrv),
-                doshas: doshas
+                doshas: doshas,
+                insightText: newInsights ? newInsights.insight : prev.insightText,
+                finding: newInsights ? newInsights.finding : prev.finding
             }));
 
             if (beat) {
                 setTimeout(() => setData(prev => ({ ...prev, beatDetected: false })), 100);
             }
         }
-    }, [data.heartRate]);
+    }, [data.heartRate, data.insightText, data.finding]);
 
     const disconnect = useCallback(async () => {
         isReadingRef.current = false;

@@ -67,6 +67,16 @@ export default function YogaCanvas() {
     const [posture, setPosture] = useState("Good");
     const [alignmentMode, setAlignmentMode] = useState("Standard");
 
+    // XP & Level State (Refs for Loop, State for UI)
+    const xpRef = useRef(0.0);
+    const levelRef = useRef(3); // Start at Level 3
+    const warningMsgRef = useRef<string | null>(null);
+
+    const [xp, setXp] = useState(0);
+    const [level, setLevel] = useState(3);
+    const [levelProgress, setLevelProgress] = useState(0);
+    const [warningMsg, setWarningMsg] = useState<string | null>(null);
+
     const addLog = (msg: string) => setLogs(prev => [...prev.slice(-4), msg]);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -330,6 +340,55 @@ export default function YogaCanvas() {
                 }
             }
 
+            // --- XP & LEVEL LOGIC ---
+            let xpGain = 0.0;
+            let warning = null;
+
+            // 1. Base XP (Posture/Face Detected)
+            if (faceResults.faceLandmarks.length > 0) {
+                xpGain += 0.1;
+            }
+
+            // 2. Mudra Bonus
+            if (currentGesture) {
+                xpGain += 0.2;
+            }
+
+            // 3. Eyes Closed Bonus
+            if (isMeditationRef.current) {
+                xpGain += 0.3;
+            }
+
+            // 4. Level Gating
+            const currentLevel = levelRef.current;
+
+            if (currentLevel >= 3 && currentLevel <= 9) {
+                if (!currentGesture) {
+                    xpGain = 0;
+                    warning = "MUDRA REQUIRED TO PROGRESS!";
+                }
+            } else if (currentLevel >= 10) {
+                if (!isMeditationRef.current) {
+                    xpGain = 0;
+                    warning = "CLOSE EYES TO PROGRESS!";
+                }
+            }
+
+            // Apply XP
+            xpRef.current += xpGain;
+            warningMsgRef.current = warning;
+
+            // Check Level Up
+            const XP_PER_LEVEL = 100;
+            const calculatedLevel = Math.floor(xpRef.current / XP_PER_LEVEL) + 1;
+
+            if (calculatedLevel > levelRef.current) {
+                levelRef.current = calculatedLevel;
+                const msg = `Congratulations! You reached Level ${calculatedLevel}.`;
+                setFeedback(msg);
+                speak(msg);
+            }
+
             // 3. Logic: Aura & Energy
             const isYogaMode = !!currentGesture || isMeditationRef.current;
 
@@ -400,6 +459,13 @@ export default function YogaCanvas() {
                 } else {
                     setMood("Relaxed");
                 }
+
+                // Update Level UI
+                setLevel(levelRef.current);
+                setXp(Math.floor(xpRef.current));
+                const progress = (xpRef.current % XP_PER_LEVEL) / XP_PER_LEVEL * 100;
+                setLevelProgress(progress);
+                setWarningMsg(warningMsgRef.current);
             }
 
             // 4. Draw Visuals
@@ -444,9 +510,6 @@ export default function YogaCanvas() {
         return () => cancelAnimationFrame(requestRef.current);
     }, [handLandmarker, faceLandmarker]);
 
-    // Level Progress (Mock for now)
-    const levelProgress = 30; // 30%
-
     return (
         <div className="relative w-full h-screen bg-black overflow-hidden font-sans select-none">
             {isLoading && (
@@ -490,7 +553,7 @@ export default function YogaCanvas() {
             {/* Level Progress Bar (Top Right Center) */}
             <div className="absolute top-24 right-80 w-64 z-20 pointer-events-none flex flex-col items-end">
                 <div className="flex justify-between items-end mb-1 w-full">
-                    <span className="text-yellow-400 font-bold text-3xl tracking-widest drop-shadow-[0_0_10px_rgba(234,179,8,0.8)] animate-pulse">LEVEL 3</span>
+                    <span className="text-yellow-400 font-bold text-3xl tracking-widest drop-shadow-[0_0_10px_rgba(234,179,8,0.8)] animate-pulse">LEVEL {level}</span>
                 </div>
                 <div className="h-6 w-full bg-black/60 border-2 border-yellow-500 rounded-sm overflow-hidden shadow-[0_0_20px_rgba(234,179,8,0.5)] relative">
                     <div className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-200" style={{ width: `${levelProgress}%` }}></div>
@@ -499,9 +562,11 @@ export default function YogaCanvas() {
                 </div>
 
                 {/* Mudra Required Warning */}
-                <div className="mt-2 bg-red-600/90 border-2 border-red-500 text-white px-4 py-1 font-bold text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-bounce">
-                    MUDRA REQUIRED TO PROGRESS!
-                </div>
+                {warningMsg && (
+                    <div className="mt-2 bg-red-600/90 border-2 border-red-500 text-white px-4 py-1 font-bold text-sm tracking-widest uppercase shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-bounce">
+                        {warningMsg}
+                    </div>
+                )}
             </div>
 
             {/* Left Sidebar (Chakra Meters) */}
@@ -520,6 +585,8 @@ export default function YogaCanvas() {
                         isConnected={arduinoData.isConnected}
                         hrvIndex={arduinoData.hrvIndex}
                         doshas={arduinoData.doshas}
+                        insightText={arduinoData.insightText}
+                        finding={arduinoData.finding}
                     />
                 </div>
             )}
