@@ -81,13 +81,14 @@ export function GuidedTour() {
                             }
                         }}
                         onClick={startTour}
-                        className="fixed bottom-8 right-8 z-50 bg-white text-black font-extrabold px-8 py-4 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.6)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] hover:scale-110 transition-all duration-300 flex items-center gap-3 group border-4 border-primary/20"
+                        style={{ backgroundColor: "#ffffff", color: "#000000" }}
+                        className="fixed bottom-8 right-8 z-50 !bg-white !text-black font-extrabold px-8 py-4 rounded-full shadow-[0_0_30px_rgba(139,92,246,0.6)] hover:shadow-[0_0_50px_rgba(139,92,246,0.9)] hover:scale-110 transition-all duration-300 flex items-center gap-3 group border-4 border-primary/20"
                     >
                         <div className="relative">
                             <Compass className="w-6 h-6 animate-[spin_3s_linear_infinite] text-primary" />
                             <div className="absolute inset-0 bg-primary/20 blur-md rounded-full animate-pulse" />
                         </div>
-                        <span className="text-xl tracking-wide">Start Tour</span>
+                        <span className="text-xl tracking-wide font-bold">Start Tour</span>
                     </motion.button>
                 )}
             </AnimatePresence>
